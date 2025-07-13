@@ -6,11 +6,9 @@ void main() async {
     baseUrl: 'http://localhost:8090',
   );
   
-  final loginService = LoginService(loginProvider);
-  
   // Example 1: Login with email and password
   print('=== Login with Email/Password ===');
-  final emailResult = await loginService.loginWithPassword(
+  final emailResult = await loginProvider.loginWithPassword(
     'test@example.com',
     'testpassword123',
   );
@@ -27,7 +25,7 @@ void main() async {
   
   // Example 2: Login with username and password
   print('\n=== Login with Username/Password ===');
-  final usernameResult = await loginService.loginWithUsername(
+  final usernameResult = await loginProvider.loginWithUsername(
     'testuser',
     'testpassword123',
   );
@@ -56,7 +54,7 @@ void main() async {
     
     // Example 4: Logout
     print('\n=== Logout ===');
-    final loggedOut = await loginService.logout(createResult.accessToken!);
+    final loggedOut = await loginProvider.logout(createResult.accessToken!);
     print(loggedOut ? '✅ Logged out successfully' : '❌ Logout failed');
   } else {
     print('❌ User creation failed: ${createResult.error}');
@@ -65,18 +63,83 @@ void main() async {
   // Example 5: Token validation
   if (emailResult.isSuccess && emailResult.accessToken != null) {
     print('\n=== Token Validation ===');
-    final isValid = await loginService.isTokenValid(emailResult.accessToken!);
+    final isValid = await loginProvider.isTokenValid(emailResult.accessToken!);
     print('Token valid: ${isValid ? '✅ Yes' : '❌ No'}');
     
-    final userId = await loginService.getUserIdFromToken(emailResult.accessToken!);
+    final userId = await loginProvider.getUserIdFromToken(emailResult.accessToken!);
     print('User ID from token: $userId');
   }
   
-  // Example 6: Provider info
+  // Example 6: OAuth Authentication
+  print('\n=== OAuth Authentication ===');
+  try {
+    final oauthResult = await loginProvider.loginWithOAuth2Code(
+      provider: 'google',
+      authorizationCode: 'mock_auth_code_from_google_oauth',
+      idToken: 'mock_id_token',
+      scope: ['openid', 'email', 'profile'],
+    );
+    
+    if (oauthResult.isSuccess) {
+      print('✅ OAuth login successful!');
+      print('User ID: ${oauthResult.user?.userId}');
+      print('Provider: google');
+    } else {
+      print('❌ OAuth login failed: ${oauthResult.error}');
+    }
+  } catch (e) {
+    print('❌ OAuth example failed (expected with mock data): $e');
+  }
+
+  // Example 7: API Key Authentication
+  print('\n=== API Key Authentication ===');
+  try {
+    // Note: This requires a valid JWT token as API key or custom implementation
+    final apiKeyResult = await loginProvider.loginWithApiKey(
+      'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.mock_jwt_token.signature',
+      keyId: 'api_key_123',
+    );
+    
+    if (apiKeyResult.isSuccess) {
+      print('✅ API key authentication successful!');
+      print('User ID: ${apiKeyResult.user?.userId}');
+      print('Key ID: api_key_123');
+    } else {
+      print('❌ API key authentication failed: ${apiKeyResult.error}');
+    }
+  } catch (e) {
+    print('❌ API key example failed (expected with mock data): $e');
+  }
+
+  // Example 8: Anonymous authentication (should fail)
+  print('\n=== Anonymous Authentication ===');
+  try {
+    final anonymousResult = await loginProvider.loginAnonymously();
+    if (anonymousResult.isSuccess) {
+      print('✅ Anonymous login successful!');
+    } else {
+      print('❌ Anonymous login failed (expected): ${anonymousResult.error}');
+    }
+  } catch (e) {
+    print('❌ Anonymous authentication failed (expected): $e');
+  }
+
+  // Example 9: Password reset (demo - will fail with test data)
+  print('\n=== Password Reset Demo ===');
+  try {
+    final resetSent = await loginProvider.sendPasswordResetEmail('test@example.com');
+    print(resetSent ? '✅ Password reset email sent' : '❌ Failed to send reset email (expected with mock data)');
+  } catch (e) {
+    print('❌ Password reset demo failed (expected): $e');
+  }
+
+  // Example 10: Provider info
   print('\n=== Provider Info ===');
-  final providerInfo = loginService.getProviderInfo();
+  final providerInfo = loginProvider.getProviderInfo();
   print('Provider: ${providerInfo['name']}');
   print('Service: ${providerInfo['service']}');
   print('Capabilities: ${providerInfo['capabilities']}');
+  print('Unsupported: ${providerInfo['unsupported']}');
+  print('OAuth Providers: ${(providerInfo['oauth_providers'] as List?)?.take(5).join(', ')}...');
   print('Base URL: ${providerInfo['baseUrl']}');
 }

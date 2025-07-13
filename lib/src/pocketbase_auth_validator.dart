@@ -1,5 +1,6 @@
 import 'package:kiss_auth/kiss_authentication.dart';
 import 'package:pocketbase/pocketbase.dart';
+
 import 'pocketbase_authentication_data.dart';
 
 class PocketBaseAuthValidator implements AuthValidator {
@@ -15,9 +16,9 @@ class PocketBaseAuthValidator implements AuthValidator {
   Future<AuthenticationData> validateToken(String token) async {
     try {
       pb.authStore.save(token, null);
-      
-      final result = await pb.collection('users').authRefresh();
-      
+
+      final result = await pb.collection(collection).authRefresh();
+
       return PocketBaseAuthenticationData(
         userId: result.record!.id,
         claims: {
@@ -38,14 +39,13 @@ class PocketBaseAuthValidator implements AuthValidator {
   Future<PocketBaseAuthenticationData> authenticateWithPassword({
     required String identity,
     required String password,
-    String collection = 'users',
   }) async {
     try {
       final result = await pb.collection(collection).authWithPassword(
-        identity,
-        password,
-      );
-      
+            identity,
+            password,
+          );
+
       return PocketBaseAuthenticationData(
         userId: result.record!.id,
         claims: {
@@ -67,7 +67,6 @@ class PocketBaseAuthValidator implements AuthValidator {
     required String password,
     String? emailVisibility,
     String? username,
-    String collection = 'users',
     Map<String, dynamic>? additionalData,
   }) async {
     try {
@@ -82,12 +81,12 @@ class PocketBaseAuthValidator implements AuthValidator {
       if (additionalData != null) body.addAll(additionalData);
 
       await pb.collection(collection).create(body: body);
-      
+
       final authResult = await pb.collection(collection).authWithPassword(
-        email,
-        password,
-      );
-      
+            email,
+            password,
+          );
+
       return PocketBaseAuthenticationData(
         userId: authResult.record!.id,
         claims: {
@@ -111,9 +110,9 @@ class PocketBaseAuthValidator implements AuthValidator {
 
 class AuthenticationException implements Exception {
   final String message;
-  
+
   AuthenticationException(this.message);
-  
+
   @override
   String toString() => 'AuthenticationException: $message';
 }

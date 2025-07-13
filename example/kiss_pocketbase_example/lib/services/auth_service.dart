@@ -7,13 +7,11 @@ class AuthService {
   
   final PocketBaseAuthValidator _validator;
   final PocketBaseLoginProvider _loginProvider;
-  final LoginService _loginService;
   PocketBaseAuthenticationData? _currentUser;
   
   AuthService() 
     : _validator = PocketBaseAuthValidator(baseUrl: _baseUrl),
-      _loginProvider = PocketBaseLoginProvider(baseUrl: _baseUrl),
-      _loginService = LoginService(PocketBaseLoginProvider(baseUrl: _baseUrl));
+      _loginProvider = PocketBaseLoginProvider(baseUrl: _baseUrl);
   
   PocketBaseAuthenticationData? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
@@ -35,7 +33,7 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final loginResult = await _loginService.loginWithPassword(email, password);
+    final loginResult = await _loginProvider.loginWithPassword(email, password);
     
     if (!loginResult.isSuccess) {
       throw Exception(loginResult.error ?? 'Login failed');

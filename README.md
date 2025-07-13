@@ -23,27 +23,55 @@ dependencies:
 
 ## Usage
 
+### LoginProvider (Recommended)
+
 ```dart
 import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
 
-// Create validator
-final validator = PocketBaseAuthValidator(baseUrl: 'http://localhost:8090');
-
-// Authenticate with password
-final authData = await validator.authenticateWithPassword(
-  identity: 'user@example.com',
-  password: 'password',
+// Create a login provider
+final loginProvider = PocketBaseLoginProvider(
+  baseUrl: 'http://localhost:8090',
 );
 
-// Access user data
-print(authData.userId);
-print(authData.email);
-print(authData.username);
-print(authData.verified);
+// Login with email and password
+final result = await loginProvider.loginWithPassword(
+  'user@example.com',
+  'password123',
+);
+
+if (result.isSuccess) {
+  print('User ID: ${result.user?.userId}');
+  print('Email: ${result.user?.email}');
+  print('Token: ${result.accessToken}');
+} else {
+  print('Login failed: ${result.error}');
+}
+
+// OAuth authentication
+final oauthResult = await loginProvider.loginWithOAuth2Code(
+  provider: 'google',
+  authorizationCode: 'auth_code_from_google',
+);
+
+// API key authentication  
+final apiResult = await loginProvider.loginWithApiKey('your_api_key');
+
+// Token validation
+final isValid = await loginProvider.isTokenValid(result.accessToken!);
+```
+
+### Authentication Validator (Token validation only)
+
+```dart
+import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+
+// Create validator for token validation
+final validator = PocketBaseAuthValidator(baseUrl: 'http://localhost:8090');
 
 // Validate existing token
-final token = validator.extractToken(authData);
-final validatedData = await validator.validateToken(token!);
+final authData = await validator.validateToken(token);
+print('User ID: ${authData.userId}');
+print('Email: ${authData.email}');
 ```
 
 ## Example App

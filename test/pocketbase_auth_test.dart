@@ -54,10 +54,13 @@ void main() {
       });
 
       test('should authenticate with custom collection', () async {
-        final result = await validator.authenticateWithPassword(
+        final customValidator = PocketBaseAuthValidator(
+          baseUrl: 'http://localhost:8090',
+          collection: 'users',
+        );
+        final result = await customValidator.authenticateWithPassword(
           identity: testEmail,
           password: testPassword,
-          collection: 'users',
         );
 
         expect(result, isA<PocketBaseAuthenticationData>());

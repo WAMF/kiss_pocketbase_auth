@@ -22,4 +22,30 @@ abstract class LoginProvider {
   
   /// Get provider information
   Map<String, dynamic> getProviderInfo();
+  
+  // Convenience methods for common authentication patterns
+  
+  /// Login with email and password
+  Future<LoginResult> loginWithPassword(String email, String password);
+  
+  /// Login with username and password
+  Future<LoginResult> loginWithUsername(String username, String password);
+  
+  /// Login with API key
+  Future<LoginResult> loginWithApiKey(String apiKey, {String? keyId});
+  
+  /// Login with OAuth credentials
+  Future<LoginResult> loginWithOAuth({
+    required String provider,
+    required String accessToken,
+    String? refreshToken,
+    String? idToken,
+    List<String>? scope,
+  });
+  
+  /// Login anonymously
+  Future<LoginResult> loginAnonymously({
+    String? userId,
+    Map<String, dynamic>? metadata,
+  });
 }
