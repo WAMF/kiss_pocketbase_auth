@@ -46,6 +46,17 @@ final token = validator.extractToken(authData);
 final validatedData = await validator.validateToken(token!);
 ```
 
+## Example App
+
+A complete Flutter example app demonstrating login/signup flow and claims inspection is available in the `example/` directory.
+
+```bash
+cd example/kiss_pocketbase_example
+flutter run
+```
+
+See [example/README.md](example/README.md) for more details.
+
 ## Integration Tests
 
 This package includes integration tests that run against a real PocketBase instance using Docker Compose.

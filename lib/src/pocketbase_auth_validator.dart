@@ -4,9 +4,11 @@ import 'pocketbase_authentication_data.dart';
 
 class PocketBaseAuthValidator implements AuthValidator {
   final PocketBase pb;
+  final String collection;
 
   PocketBaseAuthValidator({
     required String baseUrl,
+    this.collection = 'users',
   }) : pb = PocketBase(baseUrl);
 
   @override
@@ -57,6 +59,48 @@ class PocketBaseAuthValidator implements AuthValidator {
       );
     } catch (e) {
       throw AuthenticationException('Authentication failed: $e');
+    }
+  }
+
+  Future<PocketBaseAuthenticationData> createUser({
+    required String email,
+    required String password,
+    String? emailVisibility,
+    String? username,
+    String collection = 'users',
+    Map<String, dynamic>? additionalData,
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'email': email,
+        'password': password,
+        'passwordConfirm': password,
+      };
+
+      if (emailVisibility != null) body['emailVisibility'] = emailVisibility;
+      if (username != null) body['username'] = username;
+      if (additionalData != null) body.addAll(additionalData);
+
+      await pb.collection(collection).create(body: body);
+      
+      final authResult = await pb.collection(collection).authWithPassword(
+        email,
+        password,
+      );
+      
+      return PocketBaseAuthenticationData(
+        userId: authResult.record!.id,
+        claims: {
+          'token': authResult.token,
+          'record': authResult.record!.toJson(),
+          'meta': authResult.meta,
+        },
+        record: authResult.record!.toJson(),
+        collectionId: authResult.record!.collectionId,
+        collectionName: authResult.record!.collectionName,
+      );
+    } catch (e) {
+      throw AuthenticationException('User creation failed: $e');
     }
   }
 
