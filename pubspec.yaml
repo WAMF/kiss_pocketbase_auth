@@ -1,0 +1,26 @@
+name: kiss_pocketbase_auth
+description: PocketBase authentication provider for the kiss_auth package
+version: 1.0.0
+repository: https://github.com/WAMF/kiss_pocketbase_auth
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  kiss_auth:
+    git:
+      url: https://github.com/WAMF/kiss_auth.git
+  pocketbase: ^0.18.1
+  http: ^1.1.0
+
+dev_dependencies:
+  test: ^1.24.0
+  lints: ^3.0.0
+  process_run: ^0.14.2
+
+topics:
+  - authentication
+  - pocketbase
+  - auth
+  - jwt

@@ -1,0 +1,16 @@
+services:
+  pocketbase:
+    build:
+      context: .
+      dockerfile: Dockerfile.pocketbase
+    container_name: pocketbase_test
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./test/pocketbase_data:/pb_data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
