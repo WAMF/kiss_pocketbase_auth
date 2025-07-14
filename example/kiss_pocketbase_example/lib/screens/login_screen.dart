@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+import '../screens/home_screen.dart';
 import '../services/auth_service.dart';
-import 'home_screen.dart';
-import 'signup_screen.dart';
+import '../setup_functions.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,12 +11,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _obscurePassword = true;
+  String _selectedProvider = 'PocketBase';
 
   @override
   void dispose() {
@@ -27,40 +27,71 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    // Validation
+    if (email.isEmpty || password.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Please enter both email and password';
+        });
+      }
+      return;
+    }
+
+    if (!email.contains('@')) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Please enter a valid email';
+        });
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final authData = await _authService.login(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        email: email,
+        password: password,
       );
 
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
           builder: (context) => HomeScreen(authData: authData),
         ),
       );
-    } on AuthenticationException catch (e) {
-      setState(() {
-        _errorMessage = e.message;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'An unexpected error occurred';
-      });
-    } finally {
+    } on Exception catch (e) {
       if (mounted) {
         setState(() {
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
           _isLoading = false;
         });
       }
+    }
+  }
+
+  void _fillCredentials(String email, String password) {
+    _emailController.text = email;
+    _passwordController.text = password;
+  }
+
+  void _switchAuthProvider(String provider) {
+    switch (provider) {
+      case 'PocketBase':
+        setupPocketBaseProviders();
+      case 'In-Memory':
+        setupInMemoryProviders();
+      default:
+        setupPocketBaseProviders();
     }
   }
 

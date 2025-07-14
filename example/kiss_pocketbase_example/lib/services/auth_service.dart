@@ -1,20 +1,17 @@
-import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+import 'package:kiss_auth/kiss_authorization.dart';
+import 'package:kiss_auth/kiss_login.dart';
+import 'package:kiss_dependencies/kiss_dependencies.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String _tokenKey = 'auth_token';
-  static const String _baseUrl = 'http://localhost:8090';
   
-  final PocketBaseAuthValidator _validator;
-  final PocketBaseLoginProvider _loginProvider;
-  PocketBaseAuthenticationData? _currentUser;
+  AuthenticationData? _currentAuthData;
+  AuthorizationContext? _currentAuthContext;
   
-  AuthService() 
-    : _validator = PocketBaseAuthValidator(baseUrl: _baseUrl),
-      _loginProvider = PocketBaseLoginProvider(baseUrl: _baseUrl);
-  
-  PocketBaseAuthenticationData? get currentUser => _currentUser;
-  bool get isAuthenticated => _currentUser != null;
+  AuthenticationData? get currentUser => _currentAuthData;
+  AuthorizationContext? get currentAuthContext => _currentAuthContext;
+  bool get isAuthenticated => _currentAuthData != null;
   
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,26 +19,34 @@ class AuthService {
     
     if (token != null) {
       try {
-        _currentUser = await _validator.validateToken(token) as PocketBaseAuthenticationData;
-      } catch (e) {
+        final authValidator = resolve<AuthValidator>();
+        final authorizationService = resolve<AuthorizationService>();
+        
+        _currentAuthData = await authValidator.validateToken(token);
+        _currentAuthContext = await authorizationService.authorize(token);
+      } on Exception {
         await prefs.remove(_tokenKey);
       }
     }
   }
   
-  Future<PocketBaseAuthenticationData> login({
+  Future<AuthenticationData> login({
     required String email,
     required String password,
   }) async {
-    final loginResult = await _loginProvider.loginWithPassword(email, password);
+    final loginService = resolve<LoginService>();
+    final authValidator = resolve<AuthValidator>();
+    final authorizationService = resolve<AuthorizationService>();
+    
+    final loginResult = await loginService.loginWithEmail(email, password);
     
     if (!loginResult.isSuccess) {
       throw Exception(loginResult.error ?? 'Login failed');
     }
     
-    // Validate the token to get PocketBaseAuthenticationData
-    final authData = await _validator.validateToken(loginResult.accessToken!) as PocketBaseAuthenticationData;
-    _currentUser = authData;
+    final authData = await authValidator.validateToken(loginResult.accessToken!);
+    _currentAuthData = authData;
+    _currentAuthContext = await authorizationService.authorize(loginResult.accessToken!);
     
     if (loginResult.accessToken != null) {
       final prefs = await SharedPreferences.getInstance();
@@ -51,45 +56,28 @@ class AuthService {
     return authData;
   }
   
-  Future<PocketBaseAuthenticationData> signup({
+  Future<AuthenticationData> signup({
     required String email,
     required String password,
   }) async {
-    final signupResult = await _loginProvider.createUser(
-      email: email,
-      password: password,
-    );
-    
-    if (!signupResult.isSuccess) {
-      throw Exception(signupResult.error ?? 'Signup failed');
-    }
-    
-    // Validate the token to get PocketBaseAuthenticationData
-    final authData = await _validator.validateToken(signupResult.accessToken!) as PocketBaseAuthenticationData;
-    _currentUser = authData;
-    
-    if (signupResult.accessToken != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, signupResult.accessToken!);
-    }
-    
-    return authData;
+    return login(email: email, password: password);
   }
   
   Future<void> logout() async {
-    // Try to logout with the provider if we have a token
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(_tokenKey);
     
     if (token != null) {
       try {
-        await _loginProvider.logout(token);
-      } catch (e) {
+        final loginProvider = resolve<LoginProvider>();
+        await loginProvider.logout(token);
+      } on Exception {
         // Continue with local logout even if provider logout fails
       }
     }
     
-    _currentUser = null;
+    _currentAuthData = null;
+    _currentAuthContext = null;
     await prefs.remove(_tokenKey);
   }
 }

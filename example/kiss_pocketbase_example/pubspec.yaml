@@ -32,6 +32,11 @@ dependencies:
     sdk: flutter
   kiss_pocketbase_auth:
     path: ../..
+  kiss_auth:
+    git:
+      url: https://github.com/WAMF/kiss_auth.git
+      ref: main
+  kiss_dependencies: ^2.0.0
   shared_preferences: ^2.2.3
 
   # The following adds the Cupertino Icons font to your application.
