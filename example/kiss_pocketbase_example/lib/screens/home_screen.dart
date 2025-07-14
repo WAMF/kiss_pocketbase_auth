@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+import 'package:kiss_auth/kiss_authentication.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  final PocketBaseAuthenticationData authData;
+  final AuthenticationData authData;
   final AuthService _authService = AuthService();
 
   HomeScreen({super.key, required this.authData});
@@ -49,17 +49,17 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow('User ID', authData.userId),
-                    _buildInfoRow('Email', authData.email ?? 'N/A'),
-                    _buildInfoRow('Username', authData.username ?? 'N/A'),
-                    _buildInfoRow('Verified', authData.verified ? 'Yes' : 'No'),
-                    _buildInfoRow('Collection', authData.collectionName ?? 'N/A'),
+                    _buildInfoRow('Email', authData.claims['email']?.toString() ?? 'N/A'),
+                    _buildInfoRow('Username', authData.claims['username']?.toString() ?? 'N/A'),
+                    _buildInfoRow('Verified', (authData.claims['verified'] == true) ? 'Yes' : 'No'),
+                    _buildInfoRow('Collection', authData.claims['collectionName']?.toString() ?? 'N/A'),
                     _buildInfoRow(
                       'Created',
-                      authData.created?.toString() ?? 'N/A',
+                      authData.claims['created']?.toString() ?? 'N/A',
                     ),
                     _buildInfoRow(
                       'Updated',
-                      authData.updated?.toString() ?? 'N/A',
+                      authData.claims['updated']?.toString() ?? 'N/A',
                     ),
                   ],
                 ),
@@ -111,7 +111,7 @@ class HomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: SelectableText(
-                        _formatRecord(authData.record),
+                        _formatRecord(authData.claims),
                         style: const TextStyle(fontFamily: 'monospace'),
                       ),
                     ),

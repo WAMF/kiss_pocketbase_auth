@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
 
@@ -48,14 +47,20 @@ class _SignupScreenState extends State<SignupScreen> {
           builder: (context) => HomeScreen(authData: authData),
         ),
       );
-    } on AuthenticationException catch (e) {
-      setState(() {
-        _errorMessage = e.message;
-      });
+    } on Exception catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'An unexpected error occurred';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'An unexpected error occurred';
+          _isLoading = false;
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {

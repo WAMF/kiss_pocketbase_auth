@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
+import '../screens/signup_screen.dart';
 import '../services/auth_service.dart';
-import '../setup_functions.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,8 +16,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   bool _isLoading = false;
   String? _errorMessage;
-  bool _obscurePassword = true;
-  String _selectedProvider = 'PocketBase';
 
   @override
   void dispose() {
@@ -79,21 +77,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _fillCredentials(String email, String password) {
-    _emailController.text = email;
-    _passwordController.text = password;
-  }
-
-  void _switchAuthProvider(String provider) {
-    switch (provider) {
-      case 'PocketBase':
-        setupPocketBaseProviders();
-      case 'In-Memory':
-        setupInMemoryProviders();
-      default:
-        setupPocketBaseProviders();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
+        child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextFormField(
@@ -176,7 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: const Text('Don\'t have an account? Sign up'),
               ),
             ],
-          ),
         ),
       ),
     );
