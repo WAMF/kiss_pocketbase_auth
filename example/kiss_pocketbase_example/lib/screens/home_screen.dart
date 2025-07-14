@@ -1,14 +1,44 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:kiss_auth/kiss_authentication.dart';
-import '../services/auth_service.dart';
-import 'login_screen.dart';
+import 'package:kiss_pocketbase_example/screens/login_screen.dart';
+import 'package:kiss_pocketbase_example/services/auth_service.dart';
 
+/// Extension for extracting PocketBase-specific data from AuthenticationData
+extension PocketBaseAuthenticationDataExtension on AuthenticationData {
+  /// Gets the PocketBase record from claims
+  Map<String, dynamic>? get pocketBaseRecord =>
+      claims['record'] as Map<String, dynamic>?;
+
+  /// Gets the email from PocketBase record
+  String get email => pocketBaseRecord?['email']?.toString() ?? 'N/A';
+
+  /// Gets the username from PocketBase record
+  String get username => pocketBaseRecord?['username']?.toString() ?? 'N/A';
+
+  /// Gets the verified status from PocketBase record
+  String get verifiedStatus => 
+      (pocketBaseRecord?['verified'] == true) ? 'Yes' : 'No';
+
+  /// Gets the collection name from claims
+  String get collectionName => claims['collectionName']?.toString() ?? 'N/A';
+
+  /// Gets the created timestamp from PocketBase record
+  String get createdAt => pocketBaseRecord?['created']?.toString() ?? 'N/A';
+
+  /// Gets the updated timestamp from PocketBase record
+  String get updatedAt => pocketBaseRecord?['updated']?.toString() ?? 'N/A';
+}
+
+/// Home screen displaying user information and authentication data
 class HomeScreen extends StatelessWidget {
+  /// Constructor for HomeScreen
+  HomeScreen({required this.authData, super.key});
+
+  /// The authentication data for the logged-in user
   final AuthenticationData authData;
   final AuthService _authService = AuthService();
-
-  HomeScreen({super.key, required this.authData});
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +52,8 @@ class HomeScreen extends StatelessWidget {
             onPressed: () async {
               await _authService.logout();
               if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
+                await Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
                     builder: (context) => const LoginScreen(),
                   ),
                 );
@@ -33,13 +63,13 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -49,18 +79,12 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow('User ID', authData.userId),
-                    _buildInfoRow('Email', authData.claims['email']?.toString() ?? 'N/A'),
-                    _buildInfoRow('Username', authData.claims['username']?.toString() ?? 'N/A'),
-                    _buildInfoRow('Verified', (authData.claims['verified'] == true) ? 'Yes' : 'No'),
-                    _buildInfoRow('Collection', authData.claims['collectionName']?.toString() ?? 'N/A'),
-                    _buildInfoRow(
-                      'Created',
-                      authData.claims['created']?.toString() ?? 'N/A',
-                    ),
-                    _buildInfoRow(
-                      'Updated',
-                      authData.claims['updated']?.toString() ?? 'N/A',
-                    ),
+                    _buildInfoRow('Email', authData.email),
+                    _buildInfoRow('Username', authData.username),
+                    _buildInfoRow('Verified', authData.verifiedStatus),
+                    _buildInfoRow('Collection', authData.collectionName),
+                    _buildInfoRow('Created', authData.createdAt),
+                    _buildInfoRow('Updated', authData.updatedAt),
                   ],
                 ),
               ),
@@ -68,7 +92,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -95,7 +119,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -123,7 +147,7 @@ class HomeScreen extends StatelessWidget {
             if (authData.claims['token'] != null)
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -158,7 +182,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

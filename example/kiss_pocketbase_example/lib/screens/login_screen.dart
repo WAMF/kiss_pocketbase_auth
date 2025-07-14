@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../screens/home_screen.dart';
-import '../screens/signup_screen.dart';
-import '../services/auth_service.dart';
+import 'package:kiss_pocketbase_example/screens/home_screen.dart';
+import 'package:kiss_pocketbase_example/screens/signup_screen.dart';
+import 'package:kiss_pocketbase_example/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -149,12 +149,12 @@ class _LoginScreenState extends State<LoginScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (context) => const SignupScreen(),
                     ),
                   );
                 },
-                child: const Text('Don\'t have an account? Sign up'),
+                child: const Text("Don't have an account? Sign up"),
               ),
             ],
         ),

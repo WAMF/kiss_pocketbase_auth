@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import 'home_screen.dart';
+import 'package:kiss_pocketbase_example/screens/home_screen.dart';
+import 'package:kiss_pocketbase_example/services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -42,8 +42,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
           builder: (context) => HomeScreen(authData: authData),
         ),
       );
@@ -54,7 +54,7 @@ class _SignupScreenState extends State<SignupScreen> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } on Object {
       if (mounted) {
         setState(() {
           _errorMessage = 'An unexpected error occurred';
@@ -78,7 +78,7 @@ class _SignupScreenState extends State<SignupScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(

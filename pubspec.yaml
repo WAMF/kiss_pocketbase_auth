@@ -19,6 +19,7 @@ dev_dependencies:
   test: ^1.24.0
   lints: ^3.0.0
   process_run: ^0.14.2
+  very_good_analysis: ^9.0.0
 
 topics:
   - authentication

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
-import 'services/auth_service.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'package:kiss_pocketbase_example/screens/home_screen.dart';
+import 'package:kiss_pocketbase_example/screens/login_screen.dart';
+import 'package:kiss_pocketbase_example/services/auth_service.dart';
+import 'package:kiss_pocketbase_example/setup_functions.dart';
 
 void main() {
+  // Setup default providers before running the app
+  setupPocketBaseProviders();
   runApp(const MyApp());
 }
 
+/// Main application widget
 class MyApp extends StatelessWidget {
+  /// Constructor for MyApp
   const MyApp({super.key});
 
   @override
@@ -23,7 +28,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// Splash screen widget that handles initial authentication check
 class SplashScreen extends StatefulWidget {
+  /// Constructor for SplashScreen
   const SplashScreen({super.key});
 
   @override
@@ -36,23 +43,45 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthStatus();
+    });
   }
 
   Future<void> _checkAuthStatus() async {
-    await _authService.initialize();
-
-    if (!mounted) return;
-
-    if (_authService.isAuthenticated && _authService.currentUser != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(authData: _authService.currentUser!),
-        ),
+    try {
+      // Ensure providers are set up
+      setupPocketBaseProviders();
+      
+      // Add timeout to prevent hanging
+      await _authService.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          // Timeout occurred, proceed to login screen
+        },
       );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
+
+      if (!mounted) return;
+
+      if (_authService.isAuthenticated && _authService.currentUser != null) {
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (context) => HomeScreen(authData: _authService.currentUser!),
+          ),
+        );
+      } else {
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (context) => const LoginScreen(),
+          ),
+        );
+      }
+    } on Exception {
+      // If initialization fails, go to login screen
+      if (!mounted) return;
+      
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
           builder: (context) => const LoginScreen(),
         ),
       );
@@ -61,9 +90,38 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.lock_outline,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'PocketBase Auth',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Loading...',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+            const SizedBox(height: 32),
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
+        ),
       ),
     );
   }
