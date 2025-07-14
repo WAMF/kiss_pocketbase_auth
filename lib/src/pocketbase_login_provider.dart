@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:pocketbase/pocketbase.dart';
-import 'login/login_provider.dart';
-import 'login/login_credentials.dart';
-import 'login/login_result.dart';
+import 'package:kiss_auth/kiss_login.dart';
 
 /// PocketBase implementation of LoginProvider
 class PocketBaseLoginProvider implements LoginProvider {
@@ -50,13 +48,15 @@ class PocketBaseLoginProvider implements LoginProvider {
       );
 
       return LoginResult.success(
-        user: LoginUser(
+        user: UserProfile(
           userId: result.record!.id,
           email: result.record!.data['email'],
           username: result.record!.data['username'],
-          displayName: result.record!.data['name'],
-          avatarUrl: result.record!.data['avatar'],
-          metadata: result.record!.toJson(),
+          claims: {
+            ...result.record!.toJson(),
+            'displayName': result.record!.data['name'],
+            'avatarUrl': result.record!.data['avatar'],
+          },
         ),
         accessToken: result.token,
         refreshToken: null, // PocketBase uses token refresh mechanism
@@ -93,13 +93,15 @@ class PocketBaseLoginProvider implements LoginProvider {
       );
 
       return LoginResult.success(
-        user: LoginUser(
+        user: UserProfile(
           userId: result.record!.id,
           email: result.record!.data['email'],
           username: result.record!.data['username'],
-          displayName: result.record!.data['name'],
-          avatarUrl: result.record!.data['avatar'],
-          metadata: result.record!.toJson(),
+          claims: {
+            ...result.record!.toJson(),
+            'displayName': result.record!.data['name'],
+            'avatarUrl': result.record!.data['avatar'],
+          },
         ),
         accessToken: result.token,
         refreshToken: null,
@@ -144,16 +146,15 @@ class PocketBaseLoginProvider implements LoginProvider {
       );
 
       return LoginResult.success(
-        user: LoginUser(
+        user: UserProfile(
           userId: result.record!.id,
           email: result.record!.data['email'],
           username: result.record!.data['username'],
-          displayName: result.record!.data['name'],
-          avatarUrl: result.record!.data['avatar'],
-          metadata: {
+          claims: {
             ...result.record!.toJson(),
             'oauth_provider': credentials.provider,
-            'oauth_scope': credentials.scope,
+            'displayName': result.record!.data['name'],
+            'avatarUrl': result.record!.data['avatar'],
           },
         ),
         accessToken: result.token,
@@ -198,14 +199,14 @@ class PocketBaseLoginProvider implements LoginProvider {
         final result = await pb.collection(collection).authRefresh();
         
         return LoginResult.success(
-          user: LoginUser(
+          user: UserProfile(
             userId: result.record!.id,
             email: result.record!.data['email'],
             username: result.record!.data['username'],
-            displayName: result.record!.data['name'],
-            avatarUrl: result.record!.data['avatar'],
-            metadata: {
+            claims: {
               ...result.record!.toJson(),
+              'displayName': result.record!.data['name'],
+              'avatarUrl': result.record!.data['avatar'],
               'api_key_id': credentials.keyId,
               'auth_method': 'api_key',
             },
@@ -263,13 +264,15 @@ class PocketBaseLoginProvider implements LoginProvider {
       final result = await pb.collection(collection).authRefresh();
 
       return LoginResult.success(
-        user: LoginUser(
+        user: UserProfile(
           userId: result.record!.id,
           email: result.record!.data['email'],
           username: result.record!.data['username'],
-          displayName: result.record!.data['name'],
-          avatarUrl: result.record!.data['avatar'],
-          metadata: result.record!.toJson(),
+          claims: {
+            ...result.record!.toJson(),
+            'displayName': result.record!.data['name'],
+            'avatarUrl': result.record!.data['avatar'],
+          },
         ),
         accessToken: result.token,
         refreshToken: null,
@@ -451,7 +454,6 @@ class PocketBaseLoginProvider implements LoginProvider {
       provider: provider,
       accessToken: authorizationCode, // Using accessToken field for auth code
       idToken: idToken,
-      scope: scope,
     );
     return authenticate(credentials);
   }
@@ -469,12 +471,10 @@ class PocketBaseLoginProvider implements LoginProvider {
       accessToken: accessToken,
       refreshToken: refreshToken,
       idToken: idToken,
-      scope: scope,
     );
     return authenticate(credentials);
   }
   
-  @override
   Future<LoginResult> loginWithPassword(String email, String password) {
     final credentials = EmailPasswordCredentials(
       email: email,
@@ -483,7 +483,6 @@ class PocketBaseLoginProvider implements LoginProvider {
     return authenticate(credentials);
   }
   
-  @override
   Future<LoginResult> loginWithUsername(String username, String password) {
     final credentials = UsernamePasswordCredentials(
       username: username,
@@ -492,7 +491,6 @@ class PocketBaseLoginProvider implements LoginProvider {
     return authenticate(credentials);
   }
   
-  @override
   Future<LoginResult> loginWithApiKey(String apiKey, {String? keyId}) {
     final credentials = ApiKeyCredentials(
       apiKey: apiKey,
@@ -501,7 +499,6 @@ class PocketBaseLoginProvider implements LoginProvider {
     return authenticate(credentials);
   }
   
-  @override
   Future<LoginResult> loginWithOAuth({
     required String provider,
     required String accessToken,
@@ -514,12 +511,10 @@ class PocketBaseLoginProvider implements LoginProvider {
       accessToken: accessToken,
       refreshToken: refreshToken,
       idToken: idToken,
-      scope: scope,
     );
     return authenticate(credentials);
   }
 
-  @override
   Future<LoginResult> loginAnonymously({
     String? userId,
     Map<String, dynamic>? metadata,
@@ -605,13 +600,15 @@ class PocketBaseLoginProvider implements LoginProvider {
       
       // Return success with updated user info
       return LoginResult.success(
-        user: LoginUser(
+        user: UserProfile(
           userId: updatedRecord.id,
           email: updatedRecord.data['email'],
           username: updatedRecord.data['username'],
-          displayName: updatedRecord.data['name'],
-          avatarUrl: updatedRecord.data['avatar'],
-          metadata: updatedRecord.toJson(),
+          claims: {
+            ...updatedRecord.toJson(),
+            'displayName': updatedRecord.data['name'],
+            'avatarUrl': updatedRecord.data['avatar'],
+          },
         ),
         accessToken: pb.authStore.token,
         metadata: {
