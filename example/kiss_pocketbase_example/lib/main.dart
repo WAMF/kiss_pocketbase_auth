@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:kiss_pocketbase_example/screens/home_screen.dart';
 import 'package:kiss_pocketbase_example/screens/login_screen.dart';
 import 'package:kiss_pocketbase_example/services/auth_service.dart';
 import 'package:kiss_pocketbase_example/setup_functions.dart';
 
-void main() {
+void main() async {
+  // Check if PocketBase is running
+  final isRunning = await _isPocketBaseRunning();
+  if (!isRunning) {
+    print('PocketBase is not running at http://localhost:8090.');
+    print('Please start it with:');
+    print('  docker-compose -f ../../docker-compose.test.yml up');
+    print('Then restart this example app.');
+    // Optionally, you could show a dialog in the UI instead of exiting.
+    // For now, just exit early.
+    return;
+  }
+
   // Setup default providers before running the app
   setupPocketBaseProviders();
   runApp(const MyApp());
+}
+
+Future<bool> _isPocketBaseRunning() async {
+  try {
+    final response = await http.get(
+      Uri.parse('http://localhost:8090/api/health'),
+    );
+    return response.statusCode == 200;
+  } on Exception {
+    return false;
+  }
 }
 
 /// Main application widget
@@ -52,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       // Ensure providers are set up
       setupPocketBaseProviders();
-      
+
       // Add timeout to prevent hanging
       await _authService.initialize().timeout(
         const Duration(seconds: 10),
@@ -66,7 +90,8 @@ class _SplashScreenState extends State<SplashScreen> {
       if (_authService.isAuthenticated && _authService.currentUser != null) {
         await Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
-            builder: (context) => HomeScreen(authData: _authService.currentUser!),
+            builder: (context) =>
+                HomeScreen(authData: _authService.currentUser!),
           ),
         );
       } else {
@@ -79,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen> {
     } on Exception {
       // If initialization fails, go to login screen
       if (!mounted) return;
-      
+
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
           builder: (context) => const LoginScreen(),
@@ -98,7 +123,9 @@ class _SplashScreenState extends State<SplashScreen> {
             Icon(
               Icons.lock_outline,
               size: 64,
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.8),
             ),
             const SizedBox(height: 24),
             Text(

@@ -373,6 +373,57 @@ class PocketBaseLoginProvider implements LoginProvider {
       'api_key_format': _ProviderInfo.apiKeyFormat,
     };
   }
+
+  /// Creates a new user account and returns authentication data
+  Future<LoginResult> createUser({
+    required String email,
+    required String password,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'email': email,
+        'password': password,
+        'passwordConfirm': password,
+      };
+
+      if (additionalData != null) body.addAll(additionalData);
+
+      await pb.collection(collection).create(body: body);
+
+      // Authenticate the newly created user
+      final result = await pb.collection(collection).authWithPassword(
+            email,
+            password,
+          );
+
+      return LoginResult.success(
+        user: UserProfile(
+          userId: result.record.id,
+          email: result.record.data[_Field.email.value] as String?,
+          username: result.record.data[_Field.username.value] as String?,
+          claims: {
+            ...result.record.toJson(),
+            _ClaimKey.displayName.value:
+                result.record.data[_Field.name.value] as String?,
+            _ClaimKey.avatarUrl.value:
+                result.record.data[_Field.avatar.value] as String?,
+          },
+        ),
+        accessToken: result.token,
+        metadata: {
+          _MetadataKey.collection.value: collection,
+          _MetadataKey.record.value: result.record.toJson(),
+          _MetadataKey.meta.value: result.meta,
+        },
+      );
+    } on Exception catch (e) {
+      return LoginResult.failure(
+        error: 'User creation failed: $e',
+        errorCode: _ErrorCode.authenticationFailed.value,
+      );
+    }
+  }
 }
 
 // Private enums for better type safety and organization

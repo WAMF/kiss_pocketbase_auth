@@ -1,6 +1,7 @@
 import 'package:kiss_auth/kiss_authorization.dart';
 import 'package:kiss_auth/kiss_login.dart';
 import 'package:kiss_dependencies/kiss_dependencies.dart';
+import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
@@ -64,7 +65,40 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    return login(email: email, password: password);
+    final loginProvider = resolve<LoginProvider>();
+    final authValidator = resolve<AuthValidator>();
+
+    // Check if this is a PocketBase login provider
+    if (loginProvider is PocketBaseLoginProvider) {
+      // Create the user using PocketBase's createUser method
+      final loginResult = await loginProvider.createUser(
+        email: email,
+        password: password,
+      );
+
+      if (!loginResult.isSuccess) {
+        throw Exception(loginResult.error ?? 'Signup failed');
+      }
+
+      // Validate the token and get authentication data
+      final authData = await authValidator.validateToken(
+        loginResult.accessToken!,
+      );
+
+      // Store the token
+      if (loginResult.accessToken != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_tokenKey, loginResult.accessToken!);
+      }
+
+      // Set current user
+      _currentAuthData = authData;
+
+      return authData;
+    } else {
+      // Fallback to login (for other providers that don't support signup)
+      return login(email: email, password: password);
+    }
   }
 
   Future<void> logout() async {
