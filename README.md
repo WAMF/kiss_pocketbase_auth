@@ -10,23 +10,13 @@ A PocketBase authentication provider for the [kiss_auth](https://github.com/WAMF
 - Access to PocketBase user record data
 - Proper error handling with custom exceptions
 
-## Installation
-
-Add this to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  kiss_pocketbase_auth:
-    git:
-      url: https://github.com/WAMF/kiss_pocketbase_auth.git
-```
-
 ## Usage
 
 ### LoginProvider (Recommended)
 
 ```dart
 import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+import 'package:kiss_auth/kiss_login.dart';
 
 // Create a login provider
 final loginProvider = PocketBaseLoginProvider(
@@ -34,9 +24,11 @@ final loginProvider = PocketBaseLoginProvider(
 );
 
 // Login with email and password
-final result = await loginProvider.loginWithPassword(
-  'user@example.com',
-  'password123',
+final result = await loginProvider.authenticate(
+  EmailPasswordCredentials(
+    email: 'user@example.com',
+    password: 'password123',
+  ),
 );
 
 if (result.isSuccess) {
@@ -47,17 +39,38 @@ if (result.isSuccess) {
   print('Login failed: ${result.error}');
 }
 
+// Username/password authentication
+final usernameResult = await loginProvider.authenticate(
+  UsernamePasswordCredentials(
+    username: 'johndoe',
+    password: 'password123',
+  ),
+);
+
 // OAuth authentication
-final oauthResult = await loginProvider.loginWithOAuth2Code(
-  provider: 'google',
-  authorizationCode: 'auth_code_from_google',
+final oauthResult = await loginProvider.authenticate(
+  OAuthCredentials(
+    provider: 'google',
+    accessToken: 'auth_code_from_google', // OAuth2 authorization code
+  ),
 );
 
 // API key authentication  
-final apiResult = await loginProvider.loginWithApiKey('your_api_key');
+final apiResult = await loginProvider.authenticate(
+  ApiKeyCredentials(
+    apiKey: 'your_jwt_token',
+    keyId: 'optional_key_id',
+  ),
+);
 
 // Token validation
 final isValid = await loginProvider.isTokenValid(result.accessToken!);
+
+// Refresh token
+final refreshResult = await loginProvider.refreshToken(result.accessToken!);
+
+// Logout
+await loginProvider.logout(result.accessToken!);
 ```
 
 ### Authentication Validator (Token validation only)
@@ -71,7 +84,8 @@ final validator = PocketBaseAuthValidator(baseUrl: 'http://localhost:8090');
 // Validate existing token
 final authData = await validator.validateToken(token);
 print('User ID: ${authData.userId}');
-print('Email: ${authData.email}');
+print('Email: ${(authData as PocketBaseAuthenticationData).email}');
+print('Verified: ${(authData as PocketBaseAuthenticationData).verified}');
 ```
 
 ## Example App
@@ -100,18 +114,14 @@ This package includes integration tests that run against a real PocketBase insta
 # Clean up any existing containers first (recommended)
 ./scripts/cleanup_test_containers.sh
 
-# Run all tests in a single container session
-dart test test/all_tests.dart
-
-# Or use the test-all script
+# Run tests with Docker
 ./scripts/test-all.sh
 
-# Or run individual test files (they'll share container if already running)
-dart test test/pocketbase_auth_test.dart
-dart test test/integration/pocketbase_auth_validator_test.dart
+# Or run tests manually
+dart test
 ```
 
-**Note:** The tests use a singleton pattern to manage the Docker container. If a container is already running, tests will reuse it. This prevents conflicts when running multiple test files.
+**Note:** Integration tests require a running PocketBase instance. The test scripts will automatically start and manage Docker containers.
 
 ### Available Scripts
 
@@ -148,19 +158,52 @@ All scripts are located in the `scripts/` directory and are executable:
 
 ### PocketBaseAuthValidator
 
-Main authentication validator class.
+Authentication validator class for token validation.
 
 #### Constructor
 
 ```dart
-PocketBaseAuthValidator({required String baseUrl})
+PocketBaseAuthValidator({
+  required String baseUrl,
+  String collection = 'users',
+})
 ```
 
 #### Methods
 
 - `Future<AuthenticationData> validateToken(String token)` - Validates a token and returns auth data
-- `Future<PocketBaseAuthenticationData> authenticateWithPassword({required String identity, required String password, String collection = 'users'})` - Authenticates with username/email and password
-- `String? extractToken(PocketBaseAuthenticationData authData)` - Extracts token from auth data
+
+### PocketBaseLoginProvider
+
+Login provider implementation supporting multiple authentication methods.
+
+#### Constructor
+
+```dart
+PocketBaseLoginProvider({
+  required String baseUrl,
+  String collection = 'users',
+  void Function(String type, LoginCredentials credentials)? onUnsupportedCredentialType,
+})
+```
+
+#### Methods
+
+- `Future<LoginResult> authenticate(LoginCredentials credentials)` - Authenticates with various credential types
+- `Future<LoginResult> refreshToken(String refreshToken)` - Refreshes an authentication token
+- `Future<bool> logout(String token)` - Logs out and clears the auth store
+- `Future<bool> isTokenValid(String token)` - Validates if a token is still valid
+- `Future<String?> getUserIdFromToken(String token)` - Extracts user ID from a JWT token
+- `Map<String, dynamic> getProviderInfo()` - Returns provider capabilities and configuration
+- `Future<LoginResult> createUser({required String email, required String password, Map<String, dynamic>? additionalData})` - Creates a new user account
+
+#### Supported Credential Types
+
+- `EmailPasswordCredentials` - Email and password authentication
+- `UsernamePasswordCredentials` - Username and password authentication
+- `OAuthCredentials` - OAuth2 authentication (Google, Facebook, GitHub, etc.)
+- `ApiKeyCredentials` - API key authentication (requires JWT format)
+- `AnonymousCredentials` - Not supported by PocketBase
 
 ### PocketBaseAuthenticationData
 

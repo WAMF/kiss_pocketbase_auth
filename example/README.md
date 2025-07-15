@@ -306,7 +306,7 @@ flutter test integration_test/
 
 ## Resources
 
-- [Kiss PocketBase Auth Documentation](https://github.com/yourusername/kiss_pocketbase_auth)
+- [Kiss PocketBase Auth Documentation](https://github.com/WAMF/kiss_pocketbase_auth)
 - [PocketBase Documentation](https://pocketbase.io/docs/)
 - [Flutter Authentication Best Practices](https://flutter.dev/docs)
 
