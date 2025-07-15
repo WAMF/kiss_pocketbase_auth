@@ -63,21 +63,21 @@ class PocketBaseLoginProvider implements LoginProvider {
 
       return LoginResult.success(
         user: UserProfile(
-          userId: result.record!.id,
-          email: result.record!.data[_Field.email.value] as String?,
-          username: result.record!.data[_Field.username.value] as String?,
+          userId: result.record.id,
+          email: result.record.data[_Field.email.value] as String?,
+          username: result.record.data[_Field.username.value] as String?,
           claims: {
-            ...result.record!.toJson(),
+            ...result.record.toJson(),
             _ClaimKey.displayName.value:
-                result.record!.data[_Field.name.value] as String?,
+                result.record.data[_Field.name.value] as String?,
             _ClaimKey.avatarUrl.value:
-                result.record!.data[_Field.avatar.value] as String?,
+                result.record.data[_Field.avatar.value] as String?,
           },
         ),
         accessToken: result.token,
         metadata: {
           _MetadataKey.collection.value: collection,
-          _MetadataKey.record.value: result.record!.toJson(),
+          _MetadataKey.record.value: result.record.toJson(),
           _MetadataKey.meta.value: result.meta,
         },
       );
@@ -110,21 +110,21 @@ class PocketBaseLoginProvider implements LoginProvider {
 
       return LoginResult.success(
         user: UserProfile(
-          userId: result.record!.id,
-          email: result.record!.data[_Field.email.value] as String?,
-          username: result.record!.data[_Field.username.value] as String?,
+          userId: result.record.id,
+          email: result.record.data[_Field.email.value] as String?,
+          username: result.record.data[_Field.username.value] as String?,
           claims: {
-            ...result.record!.toJson(),
+            ...result.record.toJson(),
             _ClaimKey.displayName.value:
-                result.record!.data[_Field.name.value] as String?,
+                result.record.data[_Field.name.value] as String?,
             _ClaimKey.avatarUrl.value:
-                result.record!.data[_Field.avatar.value] as String?,
+                result.record.data[_Field.avatar.value] as String?,
           },
         ),
         accessToken: result.token,
         metadata: {
           _MetadataKey.collection.value: collection,
-          _MetadataKey.record.value: result.record!.toJson(),
+          _MetadataKey.record.value: result.record.toJson(),
           _MetadataKey.meta.value: result.meta,
         },
       );
@@ -165,22 +165,22 @@ class PocketBaseLoginProvider implements LoginProvider {
 
       return LoginResult.success(
         user: UserProfile(
-          userId: result.record!.id,
-          email: result.record!.data[_Field.email.value] as String?,
-          username: result.record!.data[_Field.username.value] as String?,
+          userId: result.record.id,
+          email: result.record.data[_Field.email.value] as String?,
+          username: result.record.data[_Field.username.value] as String?,
           claims: {
-            ...result.record!.toJson(),
+            ...result.record.toJson(),
             _MetadataKey.oauthProvider.value: credentials.provider,
             _ClaimKey.displayName.value:
-                result.record!.data[_Field.name.value] as String?,
+                result.record.data[_Field.name.value] as String?,
             _ClaimKey.avatarUrl.value:
-                result.record!.data[_Field.avatar.value] as String?,
+                result.record.data[_Field.avatar.value] as String?,
           },
         ),
         accessToken: result.token,
         metadata: {
           _MetadataKey.collection.value: collection,
-          _MetadataKey.record.value: result.record!.toJson(),
+          _MetadataKey.record.value: result.record.toJson(),
           _MetadataKey.meta.value: result.meta,
           _MetadataKey.oauthProvider.value: credentials.provider,
         },
@@ -220,15 +220,15 @@ class PocketBaseLoginProvider implements LoginProvider {
 
         return LoginResult.success(
           user: UserProfile(
-            userId: result.record!.id,
-            email: result.record!.data[_Field.email.value] as String?,
-            username: result.record!.data[_Field.username.value] as String?,
+            userId: result.record.id,
+            email: result.record.data[_Field.email.value] as String?,
+            username: result.record.data[_Field.username.value] as String?,
             claims: {
-              ...result.record!.toJson(),
+              ...result.record.toJson(),
               _ClaimKey.displayName.value:
-                  result.record!.data[_Field.name.value] as String?,
+                  result.record.data[_Field.name.value] as String?,
               _ClaimKey.avatarUrl.value:
-                  result.record!.data[_Field.avatar.value] as String?,
+                  result.record.data[_Field.avatar.value] as String?,
               _MetadataKey.apiKeyId.value: credentials.keyId,
               _MetadataKey.authMethod.value: _CredentialType.apiKey,
             },
@@ -236,7 +236,7 @@ class PocketBaseLoginProvider implements LoginProvider {
           accessToken: result.token,
           metadata: {
             _MetadataKey.collection.value: collection,
-            _MetadataKey.record.value: result.record!.toJson(),
+            _MetadataKey.record.value: result.record.toJson(),
             _MetadataKey.meta.value: result.meta,
             _MetadataKey.authMethod.value: _CredentialType.apiKey,
             _MetadataKey.apiKeyId.value: credentials.keyId,
@@ -288,21 +288,21 @@ class PocketBaseLoginProvider implements LoginProvider {
 
       return LoginResult.success(
         user: UserProfile(
-          userId: result.record!.id,
-          email: result.record!.data[_Field.email.value] as String?,
-          username: result.record!.data[_Field.username.value] as String?,
+          userId: result.record.id,
+          email: result.record.data[_Field.email.value] as String?,
+          username: result.record.data[_Field.username.value] as String?,
           claims: {
-            ...result.record!.toJson(),
+            ...result.record.toJson(),
             _ClaimKey.displayName.value:
-                result.record!.data[_Field.name.value] as String?,
+                result.record.data[_Field.name.value] as String?,
             _ClaimKey.avatarUrl.value:
-                result.record!.data[_Field.avatar.value] as String?,
+                result.record.data[_Field.avatar.value] as String?,
           },
         ),
         accessToken: result.token,
         metadata: {
           _MetadataKey.collection.value: collection,
-          _MetadataKey.record.value: result.record!.toJson(),
+          _MetadataKey.record.value: result.record.toJson(),
           _MetadataKey.meta.value: result.meta,
         },
       );
@@ -367,7 +367,7 @@ class PocketBaseLoginProvider implements LoginProvider {
         _CredentialType.apiKey
       ],
       'unsupported': [_CredentialType.anonymous],
-      'baseUrl': pb.baseUrl,
+      'baseUrl': pb.baseURL,
       'collection': collection,
       'oauth_providers': _OAuthProviders.supportedProviders,
       'api_key_format': _ProviderInfo.apiKeyFormat,
