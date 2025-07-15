@@ -1,5 +1,6 @@
-import 'package:test/test.dart';
 import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+import 'package:test/test.dart';
+
 import '../test_helper.dart';
 
 void main() {
@@ -19,7 +20,7 @@ void main() {
           email: testEmail,
           password: testPassword,
         );
-      } catch (e) {
+      } on Exception catch (e) {
         print('User might already exist: $e');
       }
     });
@@ -96,7 +97,6 @@ void main() {
     test('should handle collection parameter', () async {
       final customValidator = PocketBaseAuthValidator(
         baseUrl: 'http://localhost:8090',
-        collection: 'users',
       );
       final result = await customValidator.authenticateWithPassword(
         identity: testEmail,
@@ -129,7 +129,7 @@ void main() {
       );
 
       expect(result.claims, containsPair('token', isNotNull));
-      expect(result.claims, containsPair('record', isA<Map>()));
+      expect(result.claims, containsPair('record', isA<Map<String, dynamic>>()));
       
       final recordFromClaims = result.claims['record'] as Map<String, dynamic>;
       expect(recordFromClaims['email'], equals(testEmail));

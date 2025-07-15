@@ -1,5 +1,6 @@
-import 'package:test/test.dart';
 import 'package:kiss_pocketbase_auth/kiss_pocketbase_auth.dart';
+import 'package:test/test.dart';
+
 import 'test_helper.dart';
 
 void main() {
@@ -24,7 +25,7 @@ void main() {
           email: alternateEmail,
           password: testPassword,
         );
-      } catch (e) {
+      } on Exception catch (e) {
         print('Test users might already exist: $e');
       }
     });
@@ -56,7 +57,6 @@ void main() {
       test('should authenticate with custom collection', () async {
         final customValidator = PocketBaseAuthValidator(
           baseUrl: 'http://localhost:8090',
-          collection: 'users',
         );
         final result = await customValidator.authenticateWithPassword(
           identity: testEmail,

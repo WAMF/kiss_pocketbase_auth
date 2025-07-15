@@ -39,7 +39,7 @@ class PocketBaseTestHelper {
       
       _isStarted = true;
       _startupCompleter!.complete();
-    } catch (e) {
+    } on Exception catch (e) {
       _startupCompleter!.completeError(e);
       rethrow;
     } finally {
@@ -65,7 +65,7 @@ class PocketBaseTestHelper {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/health'));
       return response.statusCode == 200;
-    } catch (e) {
+    } on Exception {
       return false;
     }
   }
@@ -74,7 +74,7 @@ class PocketBaseTestHelper {
     const maxAttempts = 30;
     const delay = Duration(seconds: 2);
     
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       if (await _isPocketBaseRunning()) {
         return;
       }
@@ -82,7 +82,7 @@ class PocketBaseTestHelper {
       print('Attempt $attempt: PocketBase not ready yet...');
       
       if (attempt < maxAttempts) {
-        await Future.delayed(delay);
+        await Future<void>.delayed(delay);
       }
     }
     
@@ -160,7 +160,7 @@ class PocketBaseTestHelper {
         print('No existing pocketbase_test container found.');
         return;
       }
-    } catch (e) {
+    } on Exception catch (e) {
       print('Warning: Failed to check for existing containers: $e');
     }
     
@@ -168,7 +168,7 @@ class PocketBaseTestHelper {
     
     try {
       await _runCommand(['docker-compose', '-f', 'docker-compose.test.yml', 'down', '--remove-orphans', '--volumes']);
-    } catch (e) {
+    } on Exception catch (e) {
       print('Warning: Failed to cleanup with docker-compose: $e');
     }
     
@@ -181,7 +181,7 @@ class PocketBaseTestHelper {
           await Process.run('docker', ['rm', '-f', containerId]);
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       print('Warning: Failed to remove containers by name: $e');
     }
     
@@ -194,11 +194,11 @@ class PocketBaseTestHelper {
           await Process.run('docker', ['rm', '-f', containerId]);
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       print('Warning: Failed to remove pocketbase containers: $e');
     }
     
-    await Future.delayed(Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
   }
 
   static Future<void> _runCommand(List<String> command) async {
@@ -216,7 +216,7 @@ class PocketBaseTestHelper {
   static Future<void> cleanupTestData() async {
     try {
       await _runCommand(['docker-compose', '-f', 'docker-compose.test.yml', 'down', '-v']);
-    } catch (e) {
+    } on Exception catch (e) {
       print('Warning: Failed to cleanup test data: $e');
     }
   }

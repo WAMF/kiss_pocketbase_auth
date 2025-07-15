@@ -1,4 +1,3 @@
-library kiss_pocketbase_auth;
 
 // Authentication (token validation)
 export 'src/pocketbase_auth_validator.dart';

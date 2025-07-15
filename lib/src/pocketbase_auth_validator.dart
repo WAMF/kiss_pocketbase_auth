@@ -1,16 +1,19 @@
 import 'package:kiss_auth/kiss_authentication.dart';
+import 'package:kiss_pocketbase_auth/src/pocketbase_authentication_data.dart';
 import 'package:pocketbase/pocketbase.dart';
 
-import 'pocketbase_authentication_data.dart';
-
+/// PocketBase implementation of AuthValidator for token validation
 class PocketBaseAuthValidator implements AuthValidator {
-  final PocketBase pb;
-  final String collection;
 
+  /// Creates a new PocketBase auth validator
   PocketBaseAuthValidator({
     required String baseUrl,
     this.collection = 'users',
   }) : pb = PocketBase(baseUrl);
+  /// PocketBase client instance
+  final PocketBase pb;
+  /// Collection name for user records
+  final String collection;
 
   @override
   Future<AuthenticationData> validateToken(String token) async {
@@ -30,12 +33,13 @@ class PocketBaseAuthValidator implements AuthValidator {
         collectionId: result.record!.collectionId,
         collectionName: result.record!.collectionName,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       pb.authStore.clear();
       throw AuthenticationException('Invalid or expired token: $e');
     }
   }
 
+  /// Authenticates user with password (email or username)
   Future<PocketBaseAuthenticationData> authenticateWithPassword({
     required String identity,
     required String password,
@@ -57,11 +61,12 @@ class PocketBaseAuthValidator implements AuthValidator {
         collectionId: result.record!.collectionId,
         collectionName: result.record!.collectionName,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       throw AuthenticationException('Authentication failed: $e');
     }
   }
 
+  /// Creates a new user account and returns authentication data
   Future<PocketBaseAuthenticationData> createUser({
     required String email,
     required String password,
@@ -98,20 +103,24 @@ class PocketBaseAuthValidator implements AuthValidator {
         collectionId: authResult.record!.collectionId,
         collectionName: authResult.record!.collectionName,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       throw AuthenticationException('User creation failed: $e');
     }
   }
 
+  /// Extracts token from authentication data
   String? extractToken(PocketBaseAuthenticationData authData) {
     return authData.claims['token'] as String?;
   }
 }
 
+/// Exception thrown when authentication fails
 class AuthenticationException implements Exception {
-  final String message;
 
+  /// Creates an authentication exception with a message
   AuthenticationException(this.message);
+  /// The error message
+  final String message;
 
   @override
   String toString() => 'AuthenticationException: $message';
